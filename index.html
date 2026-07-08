@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KMS ALPHA 1.1 STABLE</title>
+<style>
+body{margin:0;font-family:Arial;background:#f3f4f6;color:#111827}.app{display:flex;min-height:100vh}
+aside{width:260px;background:#111827;color:white;padding:16px}main{flex:1;padding:22px;max-width:1500px}
+button{border:0;border-radius:9px;padding:9px 12px;margin:4px;cursor:pointer;font-weight:700}
+.nav button{display:block;width:100%;background:transparent;color:white;text-align:left}.nav button.active,.nav button:hover{background:#374151}
+.card{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:15px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:900px){.app{display:block}aside{width:auto}.grid,.grid2,.grid3{grid-template-columns:1fr}}
+input,select,textarea{width:100%;box-sizing:border-box;border:1px solid #e5e7eb;border-radius:9px;padding:10px;margin:4px 0}textarea{min-height:90px}
+table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #e5e7eb;padding:8px;font-size:13px;text-align:left;vertical-align:top}th{background:#f9fafb;color:#6b7280}
+.hidden{display:none}.primary{background:#2563eb;color:white}.green{background:#16a34a;color:white}.red{background:#dc2626;color:white}.gray{background:#e5e7eb}
+.pill,.stage{display:inline-block;border-radius:999px;padding:4px 8px;margin:2px;font-size:12px;font-weight:800;background:#f3f4f6}.done{background:#dcfce7;color:#166534}.progress{background:#fef3c7;color:#92400e}.bad{background:#fee2e2;color:#991b1b}.todo{background:#e5e7eb;color:#374151}.blue{background:#dbeafe;color:#1e40af}
+.doc{display:inline-block;background:#eef2ff;color:#3730a3;text-decoration:none;border-radius:999px;padding:5px 9px;margin:3px;font-size:12px;font-weight:700}.small{font-size:12px;color:#6b7280}.value{font-size:28px;font-weight:800}
+@media print{body *{visibility:hidden!important}#supplierPrintView,#supplierPrintView *{visibility:visible!important}#supplierPrintView{position:absolute;left:0;top:0;width:100%;background:white}.card{border:0!important}}
+
+/* KMS status colors */
+select.status-do{background:#e5e7eb!important;color:#374151!important;font-weight:800}
+select.status-order{background:#fef3c7!important;color:#92400e!important;font-weight:800}
+select.status-wait{background:#fee2e2!important;color:#991b1b!important;font-weight:800}
+select.status-hall{background:#dbeafe!important;color:#1e40af!important;font-weight:800}
+.status-card-hall{background:#eff6ff!important;border-color:#bfdbfe!important}
+.status-card-wait{background:#fff7ed!important;border-color:#fed7aa!important}
+
+
+.ai-preview{min-height:260px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ai-preview img{max-width:100%;max-height:420px}
+.ai-ok{background:#f0fdf4!important;border-left:6px solid #16a34a!important}
+.ai-warn{background:#fff7ed!important;border-left:6px solid #f97316!important}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+<h2>KMS ALPHA 1.1 STABLE</h2>
+<div class="small">wersja stable + AI Analiza Rysunku LAB</div>
+<div class="nav">
+<button class="active" onclick="show('dash',this)">👔 Pulpit</button>
+<button onclick="show('import',this)">📄 Proforma / zlecenie</button>
+<button onclick="show('prod',this)">📋 Produkcja</button>
+<button onclick="show('planning',this)">📅 Terminy i przerób</button>
+<button onclick="show('alerts',this)">🚨 Alerty</button>
+<button onclick="show('sup',this)">📦 Dostawcy</button>
+<button onclick="show('aiDrawing',this)">🤖 AI Analiza Rysunku</button>
+<button onclick="show('files',this)">📎 Pliki zleceń</button>
+<button onclick="show('comm',this)">💬 Komunikacja hala-biuro</button>
+<button onclick="show('waste',this)">♻️ Odpady</button>
+<button onclick="show('settlements',this)">💰 Rozliczenia</button>
+<button onclick="show('emails',this)">✉️ Powiadomienia</button>
+<button onclick="show('users',this)">👥 Użytkownicy</button>
+<button onclick="show('backup',this)">💾 Dane testowe</button>
+</div>
+</aside>
+<main>
+
+<section id="dash">
+<h1>👔 Pulpit</h1>
+<div class="card"><b>🟢 KMS ALPHA 1.1 STABLE</b><br>Wersja przygotowana do podmiany/publikacji na Vercel. Nie usuwać zaakceptowanych funkcji – tylko rozwijać.</div><div class="card"><b>Cel chmury:</b> wszystkie stanowiska pracują na jednej bazie danych, a pliki są przypisane do zlecenia i stanowiska.</div>
+<div class="grid">
+<div class="card"><h3>Zlecenia</h3><div class="value" id="dOrders">0</div></div>
+<div class="card"><h3>Pliki</h3><div class="value" id="dFiles">0</div></div>
+<div class="card"><h3>Materiały</h3><div class="value" id="dMaterials">0</div></div>
+<div class="card"><h3>Etapy</h3><div class="value" id="dTasks">0</div></div>
+</div>
+<div class="card"><h3>Ostatnie zlecenia</h3><div id="dashOrders"></div></div>
+</section>
+
+<section id="import" class="hidden">
+<h1>📄 Proforma / karta zlecenia</h1><div class="card"><b>Test luster:</b> LUSTRO BEZ SZLIFU → MADOR, LUSTRO ZE SZLIFEM → SZKLARZ. Testowo dodane też opcjonalne stanowisko MONTAŻ HALA.</div>
+<div class="card">
+<h3>1. Wczytaj proformę PDF</h3>
+<input id="pdfFile" type="file" accept="application/pdf">
+<button class="primary" onclick="analyzePdf()">Analizuj PDF</button>
+<div class="small">W wersji cloud plik byłby zapisany na serwerze i dostępny dla wszystkich stanowisk.</div>
+<div id="status" class="pill todo">Brak analizy</div>
+</div>
+<div class="grid3">
+<div class="card"><h3>Klient</h3><input id="client"></div>
+<div class="card"><h3>Nr zlecenia</h3><input id="orderNo"></div>
+<div class="card"><h3>Kwota</h3><input id="amount"></div>
+</div><div class="card"><h3>📅 Termin realizacji</h3><input id="deadline" type="date"><div class="small">Na tym terminie KMS będzie opierał alerty.</div></div>
+<div class="card"><h3>2. Dodaj pliki do zlecenia</h3>
+<div class="grid3">
+<div><label>Plik</label><input id="extraDocs" type="file" multiple></div>
+<div><label>Stanowisko</label><select id="docStation"><option>Zamówienie</option><option>Cięcie</option><option>Oklejanie</option><option>CNC</option><option>Składanie szafek</option><option>Składanie drzwi</option></select></div>
+<div style="align-self:end"><button class="primary" onclick="addSelectedDocs()">Dodaj pliki</button></div>
+</div>
+<div id="pendingDocs"></div>
+</div>
+<div class="grid2">
+<div class="card"><h3>Materiały</h3><table><thead><tr><th>Typ</th><th>Materiał</th><th>Ilość</th><th>Jm</th><th>Dostawca</th></tr></thead><tbody id="materialsTable"></tbody></table></div>
+<div class="card"><h3>Plan</h3><table><thead><tr><th>Etap</th><th>Ilość</th><th>Źródło</th></tr></thead><tbody id="tasksTable"></tbody></table></div>
+</div>
+<div class="card"><button class="green" onclick="createFromCurrent()">Utwórz kartę zlecenia</button></div>
+<div class="card"><h3>Surowy tekst</h3><textarea id="rawText"></textarea></div>
+</section>
+
+
+<section id="planning" class="hidden">
+<h1>📅 Terminy i przerób – TEST</h1>
+<div class="card"><b>Fundament terminów:</b> standard realizacji = <b>7 dni roboczych</b>. Etap 1: 5 dni roboczych (cięcie, oklejanie, frezy/CNC, blaty), Etap 2: +1 dzień wiercenie szafek, Etap 3: +1 dzień montaż szafek/drzwi. Przerób liczony dla 1 zmiany = 8 godzin.</div>
+<div class="grid">
+<div class="card"><h3>🪚 Cięcie</h3><div class="value">30</div><div class="small">szt./dzień</div></div>
+<div class="card"><h3>🟢 Oklejanie</h3><div class="value">600</div><div class="small">mb/dzień</div></div>
+<div class="card"><h3>⚙️ CNC</h3><div class="value">32</div><div class="small">wiercenie szafek/dzień + dodatkowe operacje</div></div>
+<div class="card"><h3>🔨 Montaż HALA</h3><div class="value">20</div><div class="small">szafek/dzień + drzwi i inne montaże</div></div>
+</div>
+<div class="card"><h3>Terminy zleceń</h3><table><thead><tr><th>Zlecenie</th><th>Klient</th><th>Termin</th><th>Start KMS</th><th>Etap 1 do</th><th>Wiercenie do</th><th>Montaż do</th><th>Cięcie</th><th>Oklejanie</th><th>CNC</th><th>Montaż</th><th>Ocena</th></tr></thead><tbody id="planningTable"></tbody></table></div>
+<div class="card"><h3>Obciążenie stanowisk</h3><table><thead><tr><th>Stanowisko</th><th>Obciążenie</th><th>Norma dzienna</th><th>Dni pracy</th><th>Status</th></tr></thead><tbody id="capacityTable"></tbody></table></div>
+</section>
+<section id="alerts" class="hidden">
+<h1>🚨 Alerty produkcyjne – TEST</h1>
+<div class="card"><b>Zasada:</b> przy 100 zleceniach KMS pokazuje tylko to, co wymaga reakcji.</div>
+<div id="alertsList"></div>
+</section>
+<section id="prod" class="hidden"><h1>📋 Produkcja</h1><div id="productionList"></div></section>
+
+<section id="sup" class="hidden">
+<h1>📦 Dostawcy</h1>
+<div class="card"><button class="green" onclick="generateSupplierOrderView()">Generuj PDF dla dostawców</button><button class="primary" onclick="markAllMaterials('Na hali')">Oznacz wszystko jako Na hali</button><div class="small">PDF: końcowe ilości, PCV +20% w tle, uwagi = nr zlecenia + klient.</div></div>
+<div id="supplierPrintView"></div>
+<div class="card"><h3>Zamówienie zbiorcze</h3><table><thead><tr><th>Dostawca</th><th>Typ</th><th>Materiał</th><th>Razem</th><th>Jm</th><th>Uwagi</th><th>Status</th></tr></thead><tbody id="supplierGrouped"></tbody></table></div>
+<div class="card"><h3>Statusy materiałów</h3><table><thead><tr><th>Dostawca</th><th>Zlecenie</th><th>Klient</th><th>Materiał</th><th>Ilość</th><th>Jm</th><th>Status</th></tr></thead><tbody id="supplierDetails"></tbody></table></div>
+</section>
+
+<section id="files" class="hidden"><h1>📎 Pliki zleceń</h1><div id="filesList"></div></section>
+
+
+
+<section id="comm" class="hidden">
+<h1>💬 Komunikacja hala-biuro</h1>
+<div class="card"><b>Cel:</b> nietypowy problem wpisujemy w KMS zamiast biegać do biura. Biuro widzi zgłoszenie i może odpowiedzieć.</div>
+<div class="card">
+<h3>Dodaj zgłoszenie z hali</h3>
+<div class="grid3">
+<div><label>Zlecenie</label><select id="commOrder"></select></div>
+<div><label>Stanowisko</label><select id="commStation"><option>Cięcie</option><option>Oklejanie</option><option>CNC</option><option>Montaż HALA</option><option>Dostawcy</option><option>Inne</option></select></div>
+<div><label>Priorytet</label><select id="commPriority"><option>Normalne</option><option>Pilne</option><option>Blokuje pracę</option></select></div>
+</div>
+<label>Problem / pytanie</label>
+<textarea id="commText" placeholder="np. Brakuje opisu, niejasny wymiar, uszkodzony element, potrzebna decyzja biura"></textarea>
+<button class="primary" onclick="addComm()">Dodaj zgłoszenie</button>
+</div>
+<div class="card">
+<h3>Otwarte zgłoszenia</h3>
+<div id="commList"></div>
+</div>
+<div class="card">
+<h3>Historia zamkniętych zgłoszeń</h3>
+<div id="commClosed"></div>
+</div>
+</section>
+
+<section id="waste" class="hidden">
+<h1>♻️ Moduł odpadów – wersja testowa</h1>
+<div class="card"><b>Cel:</b> szybkie zapisywanie sensownych odpadów płyt i PCV oraz podpowiadanie ich przy nowych zleceniach.</div>
+<div class="card">
+<h3>Dodaj odpad</h3>
+<div class="grid3">
+<div><label>Typ</label><select id="wasteType"><option>Płyta</option><option>PCV</option></select></div>
+<div><label>Dekor / kolor</label><input id="wasteDecor" placeholder="np. W960 ST7"></div>
+<div><label>Regał / miejsce</label><input id="wasteRack" placeholder="np. A, B, C"></div>
+</div>
+<div class="grid3">
+<div><label>Długość / ilość</label><input id="wasteLength" placeholder="np. 2800 lub 30"></div>
+<div><label>Szerokość / jm</label><input id="wasteWidth" placeholder="np. 800 lub mb"></div>
+<div style="align-self:end"><button class="green" onclick="addWaste()">Dodaj odpad</button></div>
+</div>
+</div>
+<div class="card"><h3>Magazyn odpadów</h3><table><thead><tr><th>Typ</th><th>Dekor</th><th>Wymiar / ilość</th><th>Regał</th><th>Status</th><th>Akcja</th></tr></thead><tbody id="wasteTable"></tbody></table></div>
+<div class="card"><h3>Podpowiedzi dla zleceń</h3><div id="wasteHints"></div></div>
+</section>
+
+<section id="settlements" class="hidden">
+<h1>💰 Moduł rozliczeń – wersja testowa</h1>
+<div class="card"><b>Cel:</b> po zleceniu widzieć sprzedaż, koszty, płatność i status rozliczenia. Na razie bez analizy finansowej właściciela.</div>
+<div class="card">
+<h3>Rozliczenia zleceń</h3>
+<table><thead><tr><th>Zlecenie</th><th>Klient</th><th>Sprzedaż</th><th>Koszt materiałów</th><th>Usługi</th><th>Zapłacone</th><th>Status</th></tr></thead><tbody id="settlementsTable"></tbody></table>
+</div>
+</section>
+
+<section id="emails" class="hidden">
+<h1>✉️ Powiadomienia e-mail – wersja testowa</h1>
+<div class="card"><b>Cel:</b> po zakończeniu zlecenia KMS przygotuje wiadomość dla klienta. W wersji testowej tworzymy treść maila, bez automatycznego wysyłania.</div>
+<div class="card">
+<h3>Generator wiadomości</h3>
+<div class="grid3">
+<div><label>Zlecenie</label><select id="emailOrder"></select></div>
+<div><label>Typ</label><select id="emailType"><option>Zlecenie gotowe</option><option>Materiał oczekuje na dostawę</option><option>Prośba o kontakt</option></select></div>
+<div style="align-self:end"><button class="primary" onclick="generateEmailDraft()">Przygotuj maila</button></div>
+</div>
+<textarea id="emailDraft" placeholder="Tu pojawi się treść maila"></textarea>
+</div>
+</section>
+
+<section id="users" class="hidden">
+<h1>👥 Użytkownicy i dostęp</h1>
+<div class="card"><table><thead><tr><th>Użytkownik</th><th>Rola</th><th>Dostęp</th></tr></thead><tbody>
+<tr><td>Łukasz</td><td>Właściciel</td><td>Pełny dostęp</td></tr>
+<tr><td>Ewa</td><td>Biuro</td><td>Proformy, dostawcy, statusy, pliki</td></tr>
+<tr><td>Dominik</td><td>Cięcie</td><td>Plan cięcia + pliki cięcia</td></tr>
+<tr><td>Oklejanie</td><td>Produkcja</td><td>Oklejanie + pliki</td></tr>
+<tr><td>CNC</td><td>Produkcja</td><td>CNC + rysunki</td></tr>
+</tbody></table></div>
+</section>
+
+
+<section id="aiDrawing" class="hidden">
+<h1>🤖 AI Analiza Rysunku – LAB</h1>
+<div class="card ai-ok">
+<b>Zasada modułu:</b> AI rozpoznaje rysunek i proponuje dane. KMS liczy według reguł Kułak Meble oraz cennika usług. Pracownik zatwierdza wynik.
+</div>
+
+<div class="grid2">
+<div class="card">
+<h3>1. Rysunek i dane</h3>
+<div class="grid2">
+<div><label>Nr / nazwa zlecenia</label><input id="aiOrderNo" value="MEUBELS - blaty EGGER F8001 ST9"></div>
+<div><label>Typ analizy</label><select id="aiAnalysisType"><option>Blaty</option><option>Element nietypowy</option><option>Płyta / formatka</option></select></div>
+</div>
+<div class="grid2">
+<div><label>Materiał / rodzaj blatu</label><select id="aiMaterialType" onchange="aiApplyRules()"><option>Inny niż HPL</option><option>HPL</option></select></div>
+<div><label>Endpoint AI</label><input id="aiApiEndpoint" value="/api/analyze-drawing"></div>
+</div>
+<label>Plik PDF / zdjęcie / rysunek</label>
+<input id="aiFileInput" type="file" accept="image/*,.pdf" onchange="aiLoadPreview(event)">
+<button class="primary" onclick="aiRunAnalysis()">🤖 Analizuj AI</button>
+<button class="gray" onclick="aiLoadMeubelsExample()">Wczytaj przykład MEUBELS</button>
+<button class="gray" onclick="aiClear()">Wyczyść</button>
+<div class="small">Wersja LAB. Jeśli endpoint /api/analyze-drawing jest wdrożony na Vercel, przycisk Analizuj AI wyśle plik do analizy. Bez endpointu możesz testować na przykładzie MEUBELS lub wkleić JSON.</div>
+</div>
+
+<div class="card">
+<h3>Podgląd</h3>
+<div class="ai-preview" id="aiPreviewBox"><span class="small">Tu pojawi się podgląd zdjęcia. PDF zostanie przypisany do analizy.</span></div>
+</div>
+</div>
+
+<div class="card ai-warn">
+<b>Reguły blatów:</b><br>
+1. Najpierw rozpoznajemy miejsca łączeń, bo one decydują o wymiarach blatów.<br>
+2. Cięcie blatu liczymy po realnych przejściach piły, nie po ilości gotowych elementów.<br>
+3. Dla blatów L: mały blat = głębokość całkowita − głębokość blatu głównego + naddatek CNC.<br>
+4. Naddatek CNC +20 mm stosujemy dla wszystkich blatów poza HPL. Dla HPL = 0 mm.
+</div>
+
+<div class="grid2">
+<div class="card">
+<h3>2. Wynik AI / JSON</h3>
+<textarea id="aiJson" rows="12" placeholder="Tu pojawi się wynik AI w JSON albo możesz wkleić go ręcznie." oninput="aiParseManualJson()"></textarea>
+<button class="gray" onclick="aiParseManualJson()">Przelicz z JSON</button>
+</div>
+<div class="card">
+<h3>3. Dane konstrukcji</h3>
+<table><thead><tr><th>Parametr</th><th>Wartość</th></tr></thead><tbody id="aiConstructionTable"></tbody></table>
+</div>
+</div>
+
+<div class="grid2">
+<div class="card">
+<h3>4. Wyliczone blaty</h3>
+<table><thead><tr><th>Element</th><th>Wymiar</th><th>Uwagi</th></tr></thead><tbody id="aiTopsTable"></tbody></table>
+</div>
+<div class="card">
+<h3>5. Cennik usług</h3>
+<table><thead><tr><th>Usługa</th><th>Jedn.</th><th>Cena netto</th></tr></thead><tbody id="aiPriceTable"></tbody></table>
+<button class="green" onclick="aiSavePrices()">Zapisz cennik</button>
+</div>
+</div>
+
+<div class="card">
+<h3>6. Rozpoznane operacje</h3>
+<table><thead><tr><th>Operacja</th><th>Ilość</th><th>Jedn.</th><th>Cena</th><th>Wartość</th><th></th></tr></thead><tbody id="aiOpsTable"></tbody></table>
+<button class="gray" onclick="aiAddOperation()">+ Dodaj operację</button>
+</div>
+
+<div class="grid2">
+<div class="card"><h3>Uwagi technologiczne</h3><textarea id="aiNotes" rows="7"></textarea></div>
+<div class="card"><h3>Podsumowanie</h3><div id="aiSummary"></div><button class="green" onclick="aiGeneratePdf()">📄 Generuj PDF wyceny</button></div>
+</div>
+</section>
+
+<section id="backup" class="hidden"><h1>💾 Dane testowe</h1><div class="card"><button class="green" onclick="exportData()">Pobierz backup</button><input id="backupFile" type="file" accept=".json"><button class="primary" onclick="importData()">Wczytaj backup</button><button class="red" onclick="clearTestData()">Wyczyść dane</button></div></section>
+
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'}
+const KEY='kms_alpha_1_0_stable';
+let state=JSON.parse(localStorage.getItem(KEY)||'{"orders":[],"waste":[],"comm":[]}'),lastAnalysis=null,pendingDocs=[]; if(!state.waste)state.waste=[]; if(!state.comm)state.comm=[];
+function byId(id){return document.getElementById(id)}function norm(v){return(v||'').replace(/\s+/g,' ').trim()}function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}function show(id,btn){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));byId(id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');render()}
+function parseNum(v){return Number(String(v||'').replace(/o/ig,'0').replace(',','.').replace(/[^\d.]/g,''))||0}function money(v){return String(v||'').replace(/\s/g,'').replace(',','.')}
+function fileToDataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(file)})}
+async function pdfText(file){const b=await file.arrayBuffer(),pdf=await pdfjsLib.getDocument({data:b}).promise;let text='';for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i),c=await p.getTextContent();text+=c.items.map(x=>x.str).join(' ')+'\\n'}return text}
+async function analyzePdf(){const f=byId('pdfFile').files[0];if(!f)return alert('Wybierz PDF');byId('status').textContent='Analizuję...';const text=await pdfText(f);byId('rawText').value=text.trim();lastAnalysis=parseProforma(text,f.name);lastAnalysis.fileUrl=await fileToDataUrl(f);renderAnalysis(lastAnalysis);byId('status').textContent='Analiza gotowa'}
+async function addSelectedDocs(){const fs=byId('extraDocs').files,st=byId('docStation').value;if(!fs.length)return alert('Wybierz plik');for(let i=0;i<fs.length;i++)pendingDocs.push({name:fs[i].name,station:st,url:await fileToDataUrl(fs[i])});byId('extraDocs').value='';renderPendingDocs()}
+function renderPendingDocs(){byId('pendingDocs').innerHTML=pendingDocs.length?pendingDocs.map((d,i)=>`<span class=doc>📎 ${esc(d.name)} → ${esc(d.station)} <button class=gray onclick="pendingDocs.splice(${i},1);renderPendingDocs()">x</button></span>`).join(''):'<span class=small>Brak dodatkowych plików.</span>'}
+
+// parser KMS
+function cleanBuyer(v){let b=norm(v).replace(/\s+(NIP|REGON|PESEL)\b.*$/i,'').replace(/\s+\d{2}-\d{3}\b.*$/i,'').replace(/\s+(ul\.?|al\.?|os\.?)\s+.*$/i,'');if(/Kułak|Kulak|Usługi Stolarskie|Kruszcowa|BREXPLPWMBK|M bank|kulak-meble|955193/i.test(b))return'';return b}
+function findBuyer(clean){let m=clean.match(/BREXPLPWMBK\s*\|\s*PLN\s+(.+?)\s+LP\s+Nazwa/i);if(m){let c=cleanBuyer(m[1]);if(c)return c}m=clean.match(/Nabywca\s+(.+?)\s+LP\s+Nazwa/i);return m?(cleanBuyer(m[1])||'Nie wykryto klienta'):'Nie wykryto klienta'}
+function findOrderNo(clean,filename){const m=clean.match(/DOTYCZY\s+ZLECENIA\s+NR\s+([0-9A-Za-z\/.\-]+)/i)||clean.match(/DOTYCZY\s+ZLECENIA\s+([0-9A-Za-z\/.\-]+)/i)||clean.match(/ZLECENIA\s+([0-9A-Za-z\/.\-]+)/i);if(m)return m[1];const f=filename.match(/(\d{1,6})/);return f?f[1]:''}
+function findAmount(clean){const m=clean.match(/Do zapłaty\s+(\d[\d\s]*(?:[,.]\d{2})?)\s*PLN/i)||clean.match(/Kwota opłacona\s+(\d[\d\s]*(?:[,.]\d{2})?)\s*PLN/i)||clean.match(/Wartość brutto\s+(\d[\d\s]*(?:[,.]\d{2})?)\s*PLN/i);return m?money(m[1]):''}
+function parseParenParams(raw){const m=String(raw||'').match(/\(([^)]*)\)/);return m?m[1].split('/').map(x=>norm(x)).filter(Boolean):[]}
+function paramQtySzt(params,raw){for(const p of params){const m=p.match(/([0-9oO]+(?:[,.][0-9]+)?)\s*S?\s*Z?\s*T/i);if(m)return parseNum(m[1])}const m=String(raw||'').match(/([0-9oO]+(?:[,.][0-9]+)?)\s*S?\s*Z?\s*T/i);return m?parseNum(m[1]):0}
+function paramMb(params,raw){for(const p of params){const m=p.match(/([0-9oO]+(?:[,.][0-9]+)?)\s*M\s*B/i);if(m)return parseNum(m[1])}const m=String(raw||'').match(/([0-9oO]+(?:[,.][0-9]+)?)\s*M\s*B/i);return m?parseNum(m[1]):0}
+function paramProducer(params,raw){const all=(params||[]).join(' ')+' '+String(raw||'');for(const p of ['EGGER','KRONOSPAN','WOODECO','WOODSTOCK','REHAU','NIEMANN']){if(new RegExp('\\b'+p+'\\b','i').test(all))return p}return''}
+function category(t){const u=String(t||'').toUpperCase();if(/LUSTRO|LUSTRA|LACOBEL|SZKŁO|SZKLO/.test(u))return'Szkło/Lustro';if(/FRONTY?\s+AKRYLOWE|AKRYL/.test(u))return'Akryl';if(/PCV|OKLEJANIE|OBRZEŻE|OBRZEZE/.test(u))return'PCV';if(/CIĘCIE\s+BLATU|CIECIE\s+BLATU/.test(u))return'Cięcie blatu';if(/CIĘCIE\s+PŁYTY|CIECIE\s+PLYTY/.test(u))return'Cięcie płyty';if(/FREZ|WIERCEN|CNC|OTWORY|ZLEW|GRZEWCZ|ZŁĄCZE|ZLACZE/.test(u))return'CNC';if(/\bHDF\b/.test(u)&&!/FREZ\s+POD\s+HDF/.test(u))return'HDF';if(/BLAT/.test(u))return'Blat';if(/PŁYTA|PLYTA/.test(u))return'Płyta';if(/MONTAŻ\s+HALA|MONTAZ\s+HALA/.test(u))return'Montaż HALA';if(/DRZWI\s+PRZESUW/.test(u))return'Drzwi przesuwne';if(/SKŁADAN|SKLADAN|MONTAŻ SZAFEK|MONTAZ SZAFEK/.test(u))return'Montaż HALA';if(/CIĘCIE|CIECIE/.test(u))return'Cięcie';return'Inne'}
+function itemName(t){return norm(t).replace(/^\d{1,3}\s+/,'').replace(/\s+\d+[,.]?\d*\s*\((szt|m2|mb|Mb|MB)\).*$/i,'').replace(/\s+\d+[,.]?\d*\s*(szt|m2|mb|Mb|MB)\b.*$/i,'')}
+function qtyFor(cat,raw,params){if(['Płyta','HDF','Akryl','Blat'].includes(cat))return{qty:paramQtySzt(params,raw),unit:'szt'};let mb=paramMb(params,raw);if(mb)return{qty:mb,unit:'mb'};let m=raw.match(/([0-9oO]+(?:[,.][0-9]+)?)\s*\((szt|m2|mb|Mb|MB)\)/i)||raw.match(/([0-9oO]+(?:[,.][0-9]+)?)\s*(szt|m2|mb|Mb|MB)\b/i);return m?{qty:parseNum(m[1]),unit:m[2].toLowerCase()}:{qty:0,unit:''}}
+function extractItems(clean){const starters='Płyta|Plyta|PŁYTA|HDF|Oklejanie|OKLEJANIE|Obrzeże|Obrzeze|PCV|Cięcie|Ciecie|Frez|Front|FRONTY|AKRYL|Blat|BLAT|Drzwi|Wiercenie|Składanie|Skladanie|Montaż|Montaz|CNC|Złącze|Zlacze|Montaż|Montaz|MONTAŻ|MONTAZ|Lustro|LUSTRO|Lustra|LUSTRA|Lacobel|LACOBEL|Szkło|Szklo|SZKŁO|SZKLO';const re=new RegExp('\\b(\\d{1,3})\\s+(('+starters+')\\s+.*?)(?=\\s+\\d{1,3}\\s+(?:'+starters+')\\b|\\s+W tym|\\s+Razem|\\s+Uwagi|\\s+Do zapłaty|\\s+Kwota opłacona|$)','gi');let arr=[],m;while((m=re.exec(clean))){const raw=norm(m[2]),cat=category(raw),params=parseParenParams(raw),q=qtyFor(cat,raw,params);arr.push({lp:m[1],category:cat,name:itemName(raw),qty:q.qty,unit:q.unit,raw,params,producer:paramProducer(params,raw),pcvMb:paramMb(params,raw)})}return arr}
+function matName(n){return norm(n).toUpperCase().replace(/^PŁYTA\s+/,'').replace(/^PLYTA\s+/,'').replace(/^FRONTY\s+AKRYLOWE\s+/,'AKRYL ').replace(/\s+\+\s+CIĘCIE.*$/i,'').replace(/\s+\+\s+CIECIE.*$/i,'').replace(/\s*\([^)]*\)\s*/g,'').trim()}
+function pcvType(raw){let special=String(raw).match(/PCV\s*([0-9]+\/[0-9]+\s*MM)/i);if(special)return'PCV '+special[1].replace(/\s+/g,'').toUpperCase();const mm=String(raw).match(/([12])\s*mm/i);return mm?'PCV '+mm[1]+' MM':'PCV 1 MM'}
+function buildMaterials(items){let list=[],cur='',prod='',curType='';items.forEach(it=>{if(['Płyta','HDF','Blat'].includes(it.category)){cur=matName(it.name);prod=it.producer;curType=it.category;list.push({type:it.category,material:cur,qty:it.qty,unit:'szt',producer:prod,status:'Do zamówienia'})}else if(it.category==='Akryl'){cur=matName(it.name);prod=it.producer;curType='Akryl';list.push({type:'Akryl',material:cur,qty:it.qty,unit:'szt',producer:prod,status:'Do zamówienia'});if(it.pcvMb)list.push({type:'PCV 1 MM',material:cur,qty:Math.ceil(it.pcvMb*1.2*10)/10,unit:'mb',producer:prod,relatedType:'Akryl',status:'Do zamówienia'})}else if(it.category==='Szkło/Lustro'){let raw=String(it.raw||'').toUpperCase();let type=/LACOBEL/.test(raw)?'Lacobel':(/SZKŁO|SZKLO/.test(raw)?'Szkło':'Lustro');let supplier=/SZLIF/.test(raw)?'SZKLARZ':'MADOR';let unit=it.unit||(/M2/i.test(it.raw)?'m2':'szt');list.push({type:type,material:matName(it.name),qty:it.qty||1,unit:unit,producer:supplier,status:'Do zamówienia',glassSupplier:supplier})}else if(it.category==='PCV'){let base=Number(it.qty)||0;list.push({type:pcvType(it.raw),material:cur||'DEKOR DO SPRAWDZENIA',qty:Math.ceil(base*1.2*10)/10,unit:it.unit||'mb',producer:it.producer||prod,relatedType:curType,status:'Do zamówienia'})}});return list}
+function buildTasks(items,materials){let t=[];function add(n,s,q,u){if(q>0)t.push({name:n,status:'Do wykonania',source:s,qty:q,unit:u})}let cut=0,cnc=0,cab=0,doors=0;items.forEach(i=>{if(['Płyta','Blat','HDF','Akryl'].includes(i.category)&&/\+\s*CIĘCIE|\+\s*CIECIE/i.test(i.raw))cut+=Number(i.qty)||0;if(['Cięcie płyty','Cięcie blatu','Cięcie'].includes(i.category))cut+=Number(i.qty)||0;if(i.category==='CNC')cnc+=Number(i.qty)||1;if(i.category==='Montaż HALA')cab+=Number(i.qty)||1;if(i.category==='Drzwi przesuwne')doors+=Number(i.qty)||1});let pcv=materials.filter(m=>String(m.type).startsWith('PCV')).reduce((s,m)=>s+(Number(m.qty)||0),0);if(!cut)cut=materials.filter(m=>['Płyta','HDF','Akryl','Blat'].includes(m.type)).reduce((s,m)=>s+(Number(m.qty)||0),0);add('1. Cięcie','Standard KMS',cut,'szt');add('2. Oklejanie','PCV',pcv,'mb');add('3. CNC','CNC',cnc,'operacji');add('4. Montaż HALA','Montaż HALA',cab,'operacji');add('5. Składanie drzwi','drzwi przesuwne',doors,'szt');return t}
+function supplierForMaterial(m){const type=String(m.type||'').toUpperCase(),mat=String(m.material||'').toUpperCase(),prod=String(m.producer||m.glassSupplier||'').toUpperCase(),rel=String(m.relatedType||'').toUpperCase(),j=type+' '+mat+' '+prod+' '+rel;if(/SZKLARZ|MARCIN|ANIŚKO|ANISKO/.test(j))return'SZKLARZ';if(/MADOR/.test(j))return'MADOR';if(/LUSTRO|LUSTRA|LACOBEL|SZKŁO|SZKLO/.test(j)){if(/SZLIF/.test(j))return'SZKLARZ';return'MADOR'}if(/NIEMANN/.test(j))return'NIEMANN';if(/REHAU/.test(j))return'SAS';if(/WOODECO|WOODSTOCK/.test(j))return'SAS';if(type.startsWith('PCV')){if(/AKRYL/.test(rel)||/AKRYL/.test(mat))return /REHAU/.test(prod)?'SAS':'NIEMANN';if(/BLAT/.test(rel)||/BLAT/.test(mat))return'SAS';return'JUAN'}if(/BLAT/.test(type)||/^BLAT/.test(mat))return /KRONOSPAN/.test(j)?'VSH':'SAS';if(/AKRYL/.test(type)||/AKRYL/.test(mat))return /REHAU/.test(j)?'SAS':'NIEMANN';if(/PŁYTA|PLYTA|HDF/.test(type))return'JUAN';return'JUAN'}
+function parseProforma(text,filename){const clean=norm(text),items=extractItems(clean),materials=buildMaterials(items),tasks=buildTasks(items,materials);return{client:findBuyer(clean),orderNo:findOrderNo(clean,filename),amount:findAmount(clean),items,materials,tasks,filename}}
+
+// orders/stations
+function createStationItems(materials,items){return{cutItems:(materials||[]).filter(m=>['Płyta','HDF','Akryl','Blat'].includes(m.type)).map(m=>({label:m.material,qty:m.qty,unit:m.unit,done:false})),edgeItems:(materials||[]).filter(m=>String(m.type).startsWith('PCV')).map(m=>({label:m.material,pcv:m.type,qty:m.qty,unit:m.unit,done:false})),cncItems:(items||[]).filter(i=>i.category==='CNC').map(i=>({label:i.name,qty:i.qty||1,unit:i.unit||'szt',done:false})),assemblyItems:(items||[]).filter(i=>i.category==='Montaż HALA'||i.category==='Drzwi przesuwne').map(i=>({label:i.name,qty:i.qty||1,unit:i.unit||'szt',done:false}))}}
+function createOrder(a,docsExtra){const si=createStationItems(a.materials,a.items);state.orders.push({id:Date.now()+Math.floor(Math.random()*99999),created:new Date().toISOString().slice(0,10),client:a.client,orderNo:a.orderNo,amount:a.amount,deadline:a.deadline||'',materials:a.materials,tasks:a.tasks,items:a.items,cutItems:si.cutItems,edgeItems:si.edgeItems,cncItems:si.cncItems,assemblyItems:si.assemblyItems||[],docs:[{name:a.filename,station:'Zamówienie',url:a.fileUrl||''}].concat(docsExtra||[])})}
+function createFromCurrent(){if(!lastAnalysis)return alert('Najpierw analizuj PDF');lastAnalysis.client=byId('client').value;lastAnalysis.orderNo=byId('orderNo').value;lastAnalysis.amount=byId('amount').value;lastAnalysis.deadline=byId('deadline')?byId('deadline').value:'';createOrder(lastAnalysis,pendingDocs);pendingDocs=[];renderPendingDocs();save();render();alert('Utworzono kartę zlecenia')}
+function docsForStation(o,st){return(o.docs||[]).filter(d=>(d.station||'Zamówienie')==='Zamówienie'||(d.station||'')===st)}function docName(d){return d.name||d}
+function docsForStationIndexed(o,st){return(o.docs||[]).map((d,i)=>({d,i})).filter(x=>(x.d.station||'Zamówienie')==='Zamówienie'||(x.d.station||'')===st)}
+function openKmsDocByIndex(orderId,docIndex){
+ const o=state.orders.find(x=>x.id===orderId);
+ if(!o||!o.docs||!o.docs[docIndex]){alert('Nie znaleziono pliku PDF.');return;}
+ const d=o.docs[docIndex];
+ const url=d.url||'';
+ if(!url){alert('Brak zapisanego pliku PDF.');return;}
+ try{
+   if(url.startsWith('data:')){
+     const parts=url.split(',');
+     const header=parts[0]||'';
+     const data=parts.slice(1).join(',');
+     const mime=(header.match(/data:([^;]+)/)||[])[1]||'application/pdf';
+     const binary=atob(data);
+     const bytes=new Uint8Array(binary.length);
+     for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+     const blob=new Blob([bytes],{type:mime});
+     const blobUrl=URL.createObjectURL(blob);
+     const win=window.open(blobUrl,'_blank');
+     if(!win){
+       const a=document.createElement('a');
+       a.href=blobUrl;
+       a.download=d.name||'plik.pdf';
+       document.body.appendChild(a);a.click();a.remove();
+     }
+     setTimeout(()=>URL.revokeObjectURL(blobUrl),60000);
+   }else{
+     const win=window.open(url,'_blank');
+     if(!win){const a=document.createElement('a');a.href=url;a.download=d.name||'plik.pdf';document.body.appendChild(a);a.click();a.remove();}
+   }
+ }catch(e){
+   alert('Nie udało się otworzyć pliku PDF: '+e.message);
+ }
+}
+function progressText(a){a=a||[];return a.filter(x=>x.done).length+'/'+a.length}function progressClass(a){a=a||[];let d=a.filter(x=>x.done).length,t=a.length;if(t&&d===t)return'done';if(d)return'progress';return'todo'}
+function matStatus(m){return m.status||'Do zamówienia'}function statusClass(s){return s==='Na hali'?'done':s==='Zamówione'?'progress':s==='Oczekiwanie na dostawę'?'bad':'todo'}
+function materialStatusFor(o,label,pcv){const wanted=String(label||'').toUpperCase();let found=(o.materials||[]).find(x=>String(x.type||'').toUpperCase().startsWith('PCV')===!!pcv&&String(x.material||'').toUpperCase()===wanted);if(!found)found=(o.materials||[]).find(x=>String(x.type||'').toUpperCase().startsWith('PCV')===!!pcv&&(String(x.material||'').toUpperCase().includes(wanted)||wanted.includes(String(x.material||'').toUpperCase())));return found?matStatus(found):'Do zamówienia'}
+function setMaterialStatusByLabel(orderId,label,pcv,status){const o=state.orders.find(x=>x.id===orderId);if(!o)return;const wanted=String(label).toUpperCase();let idx=(o.materials||[]).findIndex(x=>String(x.type||'').toUpperCase().startsWith('PCV')===!!pcv&&String(x.material||'').toUpperCase()===wanted);if(idx<0)idx=(o.materials||[]).findIndex(x=>String(x.type||'').toUpperCase().startsWith('PCV')===!!pcv&&String(x.material||'').toUpperCase().includes(wanted));if(idx>=0){o.materials[idx].status=status;save();render()}}
+
+function selectStatusClass(v){
+ if(v==='Na hali')return'status-hall';
+ if(v==='Oczekiwanie na dostawę')return'status-wait';
+ if(v==='Zamówione')return'status-order';
+ return'status-do';
+}
+function updateStatusColor(sel){
+ sel.classList.remove('status-do','status-order','status-wait','status-hall');
+ sel.classList.add(selectStatusClass(sel.value));
+}
+
+function statusSelectHtml(current,orderId,label,pcv){const opts=['Do zamówienia','Zamówione','Oczekiwanie na dostawę','Na hali'];return`<select class="${selectStatusClass(current)}" onchange="setMaterialStatusByLabel(${orderId},'${String(label).replace(/'/g,"\\'")}',${pcv?'true':'false'},this.value);updateStatusColor(this)">${opts.map(o=>`<option ${current===o?'selected':''}>${o}</option>`).join('')}</select>`}
+function toggleItem(oid,g,i){let o=state.orders.find(x=>x.id===oid),arr=g==='cut'?o.cutItems:(g==='edge'?o.edgeItems:(g==='cnc'?o.cncItems:(o.assemblyItems||[])));arr[i].done=!arr[i].done;let t=(o.tasks||[]).find(x=>String(x.name).includes(g==='cut'?'Cięcie':g==='edge'?'Oklejanie':g==='cnc'?'CNC':'Montaż'));if(t&&arr.length&&arr.every(x=>x.done))t.status='Zakończone';save();render()}
+function stationBlock(o,g,title){let arr=g==='cut'?o.cutItems:(g==='edge'?o.edgeItems:(g==='cnc'?o.cncItems:(o.assemblyItems||[])));if(!arr||!arr.length)return'';let st=g==='cut'?'Cięcie':(g==='edge'?'Oklejanie':(g==='cnc'?'CNC':'Montaż HALA')),done=arr.filter(x=>x.done).length,total=arr.length,all=total&&done===total,label=g==='cut'?'Wycięte':(g==='edge'?'Oklejone':(g==='cnc'?'CNC zrealizowane':'Montaż zakończony')),docs=docsForStationIndexed(o,st).map(x=>x.d.url?`<button class=doc onclick="openKmsDocByIndex(${o.id},${x.i})">📎 Otwórz PDF: ${esc(docName(x.d))}</button>`:`<span class=doc>📎 ${esc(docName(x.d))}</span>`).join('');const rows=arr.map((it,i)=>`<tr><td><input type=checkbox ${it.done?'checked':''} onchange="toggleItem(${o.id},'${g}',${i})"></td><td>${esc(it.label)}</td><td>${esc(it.pcv||'')}</td><td>${esc(it.qty)} ${esc(it.unit)}</td><td>${g==='assembly'?'<span class="stage todo">nie dotyczy</span>':statusSelectHtml(materialStatusFor(o,it.label,g==='edge'),o.id,it.label,g==='edge')}</td><td><span class="stage ${it.done?'done':'todo'}">${it.done?'Wykonane':'Do wykonania'}</span></td></tr>`).join('');return`<div class=card style="box-shadow:none"><h4>${title} <span class="stage ${all?'done':progressClass(arr)}">${all?label+' ✓ ':''}${progressText(arr)}</span></h4>${docs}<table><thead><tr><th></th><th>Pozycja</th><th>Opis</th><th>Ilość</th><th>Materiał</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+function markAllMaterials(status){state.orders.forEach(o=>(o.materials||[]).forEach(m=>m.status=status));save();render();alert('Status wszystkich materiałów: '+status)}
+function materialDisplayName(m){return String(m.type||'').startsWith('PCV')?String(m.type)+' '+String(m.material):String(m.material)}
+function grouped(){let map={};state.orders.forEach(o=>(o.materials||[]).forEach(m=>{let s=supplierForMaterial(m),k=s+'|'+m.type+'|'+m.material+'|'+m.unit+'|'+matStatus(m);if(!map[k])map[k]={supplier:s,type:m.type,material:materialDisplayName(m),qty:0,unit:m.unit,status:matStatus(m),orders:[]};map[k].qty+=Number(m.qty)||0;map[k].orders.push((o.orderNo||'')+' '+(o.client||''))}));return Object.values(map)}
+function generateSupplierOrderView(){const groups=grouped();if(!groups.length)return alert('Brak pozycji');let suppliers=[...new Set(groups.map(g=>g.supplier))],htmlOut='<div class=card><h3>📄 Gotowe zamówienia</h3><button class=green onclick="window.print()">Drukuj / zapisz jako PDF</button></div>';suppliers.forEach(s=>{htmlOut+=`<div class=card><h2>Zamówienie do hurtowni: ${esc(s)}</h2><table><thead><tr><th>Materiał</th><th>Ilość</th><th>Jm</th><th>Uwagi</th></tr></thead><tbody>`;groups.filter(g=>g.supplier===s).forEach(r=>htmlOut+=`<tr><td>${esc(r.material)}</td><td>${esc(Math.round(r.qty*100)/100)}</td><td>${esc(r.unit)}</td><td>${esc([...new Set(r.orders)].join(', '))}</td></tr>`);htmlOut+='</tbody></table></div>'});byId('supplierPrintView').innerHTML=htmlOut;state.orders.forEach(o=>(o.materials||[]).forEach(m=>{if(matStatus(m)==='Do zamówienia')m.status='Zamówione'}));save();render();byId('supplierPrintView').innerHTML=htmlOut}
+
+// render
+function renderAnalysis(r){byId('client').value=r.client;byId('orderNo').value=r.orderNo;byId('amount').value=r.amount;if(byId('deadline'))byId('deadline').value=r.deadline||'';byId('materialsTable').innerHTML=r.materials.map(m=>`<tr><td>${esc(m.type)}</td><td>${esc(m.material)}</td><td>${esc(m.qty)}</td><td>${esc(m.unit)}</td><td>${esc(supplierForMaterial(m))}</td></tr>`).join('')||'<tr><td colspan=5>Brak</td></tr>';byId('tasksTable').innerHTML=r.tasks.map(t=>`<tr><td>${esc(t.name)}</td><td>${esc(t.qty)} ${esc(t.unit)}</td><td>${esc(t.source)}</td></tr>`).join('')||'<tr><td colspan=3>Brak</td></tr>'}
+function render(){byId('dOrders').textContent=state.orders.length;byId('dFiles').textContent=state.orders.reduce((s,o)=>s+(o.docs||[]).length,0);byId('dMaterials').textContent=state.orders.reduce((s,o)=>s+(o.materials||[]).length,0);byId('dTasks').textContent=state.orders.reduce((s,o)=>s+(o.tasks||[]).length,0);byId('dashOrders').innerHTML=state.orders.map(o=>`<div class=card><b>${esc(o.orderNo)} — ${esc(o.client)}</b> ${o.deadline?'<span class="pill blue">📅 '+esc(o.deadline)+'</span>':''}<br><span class="stage ${progressClass(o.cutItems)}">Cięcie ${progressText(o.cutItems)}</span><span class="stage ${progressClass(o.edgeItems)}">Oklejanie ${progressText(o.edgeItems)}</span><span class="stage ${progressClass(o.cncItems)}">CNC ${progressText(o.cncItems)}</span><span class="stage ${progressClass(o.assemblyItems||[])}">Montaż ${progressText(o.assemblyItems||[])}</span></div>`).join('')||'<span class=small>Brak</span>';byId('productionList').innerHTML=state.orders.map(o=>`<div class=card><h3>${esc(o.orderNo)} — ${esc(o.client)}</h3>${stationBlock(o,'cut','🪚 Cięcie')}${stationBlock(o,'edge','🟢 Oklejanie')}${stationBlock(o,'cnc','⚙️ CNC')}${stationBlock(o,'assembly','🔨 Montaż HALA')}</div>`).join('')||'<div class=card>Brak zleceń</div>';byId('supplierGrouped').innerHTML=grouped().map(g=>`<tr><td><b>${esc(g.supplier)}</b></td><td>${esc(g.type)}</td><td>${esc(g.material)}</td><td><b>${esc(Math.round(g.qty*100)/100)}</b></td><td>${esc(g.unit)}</td><td>${esc([...new Set(g.orders)].join(', '))}</td><td><span class="pill ${statusClass(g.status)}">${esc(g.status)}</span></td></tr>`).join('')||'<tr><td colspan=7>Brak</td></tr>';byId('supplierDetails').innerHTML=state.orders.flatMap((o,oi)=>(o.materials||[]).map((m,mi)=>`<tr><td>${esc(supplierForMaterial(m))}</td><td>${esc(o.orderNo)}</td><td>${esc(o.client)}</td><td>${esc(materialDisplayName(m))}</td><td>${esc(m.qty)}</td><td>${esc(m.unit)}</td><td><select class="${selectStatusClass(matStatus(m))}" onchange="state.orders[${oi}].materials[${mi}].status=this.value;updateStatusColor(this);save();render()"><option ${matStatus(m)==='Do zamówienia'?'selected':''}>Do zamówienia</option><option ${matStatus(m)==='Zamówione'?'selected':''}>Zamówione</option><option ${matStatus(m)==='Oczekiwanie na dostawę'?'selected':''}>Oczekiwanie na dostawę</option><option ${matStatus(m)==='Na hali'?'selected':''}>Na hali</option></select></td></tr>`)).join('')||'<tr><td colspan=7>Brak</td></tr>';byId('filesList').innerHTML=state.orders.map(o=>`<div class=card><h3>${esc(o.orderNo)} — ${esc(o.client)}</h3>${(o.docs||[]).map((d,di)=>d.url?`<button class=doc onclick="openKmsDocByIndex(${o.id},${di})">📎 Otwórz: ${esc(docName(d))} → ${esc(d.station)}</button>`:`<span class=doc>📎 ${esc(docName(d))}</span>`).join('')}</div>`).join('')||'<div class=card>Brak plików</div>'}
+
+function addWaste(){
+ const type=byId('wasteType').value,decor=norm(byId('wasteDecor').value).toUpperCase(),rack=norm(byId('wasteRack').value).toUpperCase();
+ const len=norm(byId('wasteLength').value),wid=norm(byId('wasteWidth').value);
+ if(!decor)return alert('Wpisz dekor / kolor odpadu.');
+ state.waste.push({id:Date.now(),type,decor,rack,length:len,width:wid,status:'Dostępny',created:new Date().toISOString().slice(0,10)});
+ ['wasteDecor','wasteRack','wasteLength','wasteWidth'].forEach(id=>byId(id).value='');
+ save();render();
+}
+function useWaste(id){
+ const w=state.waste.find(x=>x.id===id);
+ if(w)w.status=w.status==='Dostępny'?'Zarezerwowany':'Dostępny';
+ save();render();
+}
+function renderWaste(){
+ const el=byId('wasteTable');if(!el)return;
+ el.innerHTML=(state.waste||[]).map(w=>`<tr><td>${esc(w.type)}</td><td><b>${esc(w.decor)}</b></td><td>${esc(w.length)} ${esc(w.width)}</td><td>${esc(w.rack)}</td><td><span class="pill ${w.status==='Dostępny'?'done':'progress'}">${esc(w.status)}</span></td><td><button class="primary" onclick="useWaste(${w.id})">${w.status==='Dostępny'?'Rezerwuj':'Zwolnij'}</button></td></tr>`).join('')||'<tr><td colspan=6>Brak odpadów.</td></tr>';
+ const needed=[...new Set(state.orders.flatMap(o=>(o.materials||[]).map(m=>String(m.material||'').toUpperCase())))];
+ const hints=(state.waste||[]).filter(w=>w.status==='Dostępny'&&needed.some(n=>n&&n.includes(w.decor)));
+ byId('wasteHints').innerHTML=hints.length?hints.map(w=>`<div class="pill done">Dostępny odpad: ${esc(w.decor)} — ${esc(w.length)} ${esc(w.width)} — regał ${esc(w.rack)}</div>`).join(''):'<span class="small">Brak dopasowanych odpadów do aktualnych zleceń.</span>';
+}
+function renderSettlements(){
+ const el=byId('settlementsTable');if(!el)return;
+ el.innerHTML=state.orders.map(o=>`<tr><td>${esc(o.orderNo)}</td><td>${esc(o.client)}</td><td>${esc(o.amount||'')}</td><td><input placeholder="koszt" value="${esc(o.materialCost||'')}" onchange="o.materialCost=this.value;save()"></td><td><input placeholder="usługi" value="${esc(o.serviceCost||'')}" onchange="o.serviceCost=this.value;save()"></td><td><select onchange="o.paid=this.value;save();render()"><option ${o.paid==='Nie'?'selected':''}>Nie</option><option ${o.paid==='Częściowo'?'selected':''}>Częściowo</option><option ${o.paid==='Tak'?'selected':''}>Tak</option></select></td><td><span class="pill ${o.paid==='Tak'?'done':'progress'}">${esc(o.paid||'Nie')}</span></td></tr>`).join('')||'<tr><td colspan=7>Brak zleceń.</td></tr>';
+}
+function renderEmailOrders(){
+ const el=byId('emailOrder');if(!el)return;
+ el.innerHTML=state.orders.map(o=>`<option value="${o.id}">${esc(o.orderNo)} — ${esc(o.client)}</option>`).join('');
+}
+function generateEmailDraft(){
+ const id=Number(byId('emailOrder').value),o=state.orders.find(x=>x.id===id);
+ if(!o)return alert('Wybierz zlecenie.');
+ const type=byId('emailType').value;
+ let txt='';
+ if(type==='Zlecenie gotowe')txt=`Dzień dobry,\n\ninformujemy, że zlecenie nr ${o.orderNo} jest gotowe.\n\nPozdrawiamy,\nKułak Meble`;
+ if(type==='Materiał oczekuje na dostawę')txt=`Dzień dobry,\n\ninformujemy, że realizacja zlecenia nr ${o.orderNo} oczekuje na dostawę materiału. Będziemy informować o dalszym statusie.\n\nPozdrawiamy,\nKułak Meble`;
+ if(type==='Prośba o kontakt')txt=`Dzień dobry,\n\nprosimy o kontakt w sprawie zlecenia nr ${o.orderNo}.\n\nPozdrawiamy,\nKułak Meble`;
+ byId('emailDraft').value=txt;
+}
+
+
+
+function addComm(){
+ const oid=Number(byId('commOrder').value);
+ const o=state.orders.find(x=>x.id===oid);
+ const text=norm(byId('commText').value);
+ if(!text)return alert('Wpisz problem lub pytanie.');
+ state.comm.push({id:Date.now(),orderId:oid,orderNo:o?o.orderNo:'',client:o?o.client:'',station:byId('commStation').value,priority:byId('commPriority').value,text,answer:'',status:'Otwarte',created:new Date().toLocaleString()});
+ byId('commText').value='';
+ save();render();
+}
+function closeComm(id){
+ const c=state.comm.find(x=>x.id===id);
+ if(c){c.status='Zamknięte';c.closed=new Date().toLocaleString();save();render();}
+}
+function reopenComm(id){
+ const c=state.comm.find(x=>x.id===id);
+ if(c){c.status='Otwarte';save();render();}
+}
+function setCommAnswer(id,val){
+ const c=state.comm.find(x=>x.id===id);
+ if(c){c.answer=val;save();}
+}
+function renderComm(){
+ const sel=byId('commOrder'); if(!sel)return;
+ sel.innerHTML=state.orders.map(o=>`<option value="${o.id}">${esc(o.orderNo)} — ${esc(o.client)}</option>`).join('')||'<option value="">Brak zleceń</option>';
+ const open=(state.comm||[]).filter(c=>c.status!=='Zamknięte');
+ const closed=(state.comm||[]).filter(c=>c.status==='Zamknięte');
+ byId('commList').innerHTML=open.length?open.map(c=>`<div class="card ${c.priority==='Blokuje pracę'?'status-card-wait':''}"><b>${esc(c.orderNo)} — ${esc(c.client)}</b> <span class="pill ${c.priority==='Blokuje pracę'?'bad':c.priority==='Pilne'?'progress':'todo'}">${esc(c.priority)}</span><br><span class="small">${esc(c.station)} • ${esc(c.created)}</span><p>${esc(c.text)}</p><label>Odpowiedź biura</label><textarea onchange="setCommAnswer(${c.id},this.value)" placeholder="Tu biuro wpisuje odpowiedź">${esc(c.answer||'')}</textarea><button class="green" onclick="closeComm(${c.id})">Zamknij zgłoszenie ✓</button></div>`).join(''):'<span class="small">Brak otwartych zgłoszeń.</span>';
+ byId('commClosed').innerHTML=closed.length?closed.map(c=>`<div class="card"><b>${esc(c.orderNo)} — ${esc(c.client)}</b><br><span class="small">${esc(c.station)} • zamknięte: ${esc(c.closed||'')}</span><p>${esc(c.text)}</p>${c.answer?`<p><b>Odpowiedź:</b> ${esc(c.answer)}</p>`:''}<button class="gray" onclick="reopenComm(${c.id})">Przywróć</button></div>`).join(''):'<span class="small">Brak historii.</span>';
+}
+const _kmsBaseRender=render;
+render=function(){
+ _kmsBaseRender();
+ renderWaste();
+ renderSettlements();
+ renderEmailOrders();
+ renderPlanning();
+ renderAlerts();
+ renderComm();
+};
+
+
+
+const CAPACITY={cut:30,edge:600,cnc:32,assembly:20};
+const STANDARD_LEAD_WORKDAYS=7;
+function isWorkday(d){const day=d.getDay();return day!==0&&day!==6}
+function addWorkdays(date,days){
+ const d=new Date(date); d.setHours(0,0,0,0);
+ let n=0;
+ while(n<days){d.setDate(d.getDate()+1);if(isWorkday(d))n++}
+ return d;
+}
+function subWorkdays(date,days){
+ const d=new Date(date); d.setHours(0,0,0,0);
+ let n=0;
+ while(n<days){d.setDate(d.getDate()-1);if(isWorkday(d))n++}
+ return d;
+}
+function fmtDate(d){return d?d.toISOString().slice(0,10):''}
+function orderSchedule(o){
+ if(!o.deadline)return null;
+ const due=new Date(o.deadline); due.setHours(0,0,0,0);
+ const start=subWorkdays(due,STANDARD_LEAD_WORKDAYS);
+ return {
+  start:fmtDate(start),
+  stage1:fmtDate(addWorkdays(start,5)),
+  drilling:fmtDate(addWorkdays(start,6)),
+  assembly:fmtDate(due)
+ };
+}
+function orderLoads(o){
+ const cut=(o.cutItems||[]).reduce((s,x)=>s+(Number(x.qty)||0),0);
+ const edge=(o.edgeItems||[]).reduce((s,x)=>s+(Number(x.qty)||0),0);
+ const cnc=(o.cncItems||[]).reduce((s,x)=>s+(Number(x.qty)||1),0);
+ const assembly=(o.assemblyItems||[]).reduce((s,x)=>s+(Number(x.qty)||1),0);
+ return {cut,edge,cnc,assembly};
+}
+function daysNeeded(load,cap){return cap?Math.ceil((Number(load)||0)/cap):0}
+function workdaysToDeadline(o){
+ if(!o.deadline)return null;
+ const today=new Date();today.setHours(0,0,0,0);
+ const due=new Date(o.deadline);due.setHours(0,0,0,0);
+ let d=new Date(today),count=0;
+ if(d>due)return -1;
+ while(d<due){d.setDate(d.getDate()+1);if(isWorkday(d))count++}
+ return count;
+}
+function orderRisk(o){
+ const l=orderLoads(o);
+ const maxDays=Math.max(daysNeeded(l.cut,CAPACITY.cut),daysNeeded(l.edge,CAPACITY.edge),daysNeeded(l.cnc,CAPACITY.cnc),daysNeeded(l.assembly,CAPACITY.assembly));
+ const left=workdaysToDeadline(o);
+ if(left===null)return {level:'todo',text:'Brak terminu'};
+ if(left<0)return {level:'bad',text:'Termin przekroczony'};
+ if(left<STANDARD_LEAD_WORKDAYS)return {level:'bad',text:'Mniej niż 7 dni roboczych'};
+ if(maxDays>left)return {level:'bad',text:'Termin zagrożony'};
+ if(maxDays>=Math.max(1,left-1))return {level:'progress',text:'Mały zapas'};
+ return {level:'done',text:'Bezpiecznie'};
+}
+function stationTotals(){
+ const t={cut:0,edge:0,cnc:0,assembly:0};
+ state.orders.forEach(o=>{const l=orderLoads(o);t.cut+=l.cut;t.edge+=l.edge;t.cnc+=l.cnc;t.assembly+=l.assembly});
+ return t;
+}
+function hasSlidingDoorRisk(o){
+ const mats=(o.materials||[]).map(m=>String(m.type+' '+m.material+' '+m.status).toUpperCase()).join(' ');
+ const tasks=(o.tasks||[]).map(t=>String(t.name).toUpperCase()).join(' ');
+ const items=(o.items||[]).map(i=>String(i.raw||'').toUpperCase()).join(' ');
+ const isDoor=/DRZWI|PRZESUW/.test(tasks+' '+items);
+ const missingMirror=/LUSTRO/.test(mats)&&!/LUSTRO.*NA HALI/.test(mats);
+ const missingProfiles=/PROFIL/.test(mats)&&!/PROFIL.*NA HALI/.test(mats);
+ return {isDoor,missingMirror,missingProfiles};
+}
+function renderPlanning(){
+ const pt=byId('planningTable');if(!pt)return;
+ pt.innerHTML=state.orders.map(o=>{
+  const l=orderLoads(o),r=orderRisk(o),s=orderSchedule(o);
+  return `<tr><td>${esc(o.orderNo)}</td><td>${esc(o.client)}</td><td><input type="date" value="${esc(o.deadline||'')}" onchange="o.deadline=this.value;save();render()"></td><td>${s?esc(s.start):'-'}</td><td>${s?esc(s.stage1):'-'}</td><td>${s?esc(s.drilling):'-'}</td><td>${s?esc(s.assembly):'-'}</td><td>${l.cut}</td><td>${l.edge}</td><td>${l.cnc}</td><td>${l.assembly}</td><td><span class="pill ${r.level}">${esc(r.text)}</span></td></tr>`;
+ }).join('')||'<tr><td colspan=12>Brak zleceń.</td></tr>';
+ const ct=byId('capacityTable');if(!ct)return;
+ const totals=stationTotals();
+ const rows=[['🪚 Cięcie',totals.cut,CAPACITY.cut,'szt.'],['🟢 Oklejanie',totals.edge,CAPACITY.edge,'mb'],['⚙️ CNC',totals.cnc,CAPACITY.cnc,'operacji'],['🔨 Montaż HALA',totals.assembly,CAPACITY.assembly,'operacji']];
+ ct.innerHTML=rows.map(r=>{const d=daysNeeded(r[1],r[2]);const over=r[1]>r[2];return `<tr><td>${r[0]}</td><td><b>${r[1]}</b> ${r[3]}</td><td>${r[2]} ${r[3]}/dzień</td><td>${d}</td><td><span class="pill ${over?'bad':'done'}">${over?'Przeciążenie':'OK'}</span></td></tr>`}).join('');
+}
+function renderAlerts(){
+ const el=byId('alertsList');if(!el)return;
+ let alerts=[];
+ state.orders.forEach(o=>{
+  const r=orderRisk(o);
+  if(r.level==='bad'||r.level==='progress'||r.text==='Brak terminu')alerts.push({order:o,msg:r.text,level:r.level});
+  const door=hasSlidingDoorRisk(o);
+  if(door.isDoor&&door.missingMirror)alerts.push({order:o,msg:'Drzwi przesuwne: oczekiwanie na lustro',level:'bad'});
+  if(door.isDoor&&door.missingProfiles)alerts.push({order:o,msg:'Drzwi przesuwne: oczekiwanie na profile',level:'bad'});
+  (o.materials||[]).forEach(m=>{if(matStatus(m)!=='Na hali')alerts.push({order:o,msg:`${materialDisplayName(m)} — ${matStatus(m)}`,level:matStatus(m)==='Oczekiwanie na dostawę'?'bad':'progress'})});
+ });
+ el.innerHTML=alerts.length?alerts.map(a=>`<div class="card"><span class="pill ${a.level}">${a.level==='bad'?'🚨':'⚠️'}</span> <b>${esc(a.order.orderNo)} — ${esc(a.order.client)}</b><br>${esc(a.msg)}</div>`).join(''):'<div class="card"><span class="pill done">✅ Brak alertów</span></div>';
+}
+
+function exportData(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kms_cloud_test_backup.json';a.click()}
+function importData(){let f=byId('backupFile').files[0];if(!f)return;let r=new FileReader();r.onload=()=>{state=JSON.parse(r.result);save();render()};r.readAsText(f)}
+function clearTestData(){if(confirm('Wyczyścić dane?')){state={orders:[]};save();render()}}
+
+/* ===== KMS LAB: AI Analiza Rysunku ===== */
+const AI_PRICE_KEY='kms_ai_analiza_rysunku_prices_v11';
+const aiDefaultPrices=[
+ ['Cięcie blatu / elementu','szt',25],
+ ['Element nietypowy / ręczna kontrola','szt',50],
+ ['Frezowanie otworu okrągłego','szt',70],
+ ['Otwory pod śruby do łączenia blatów','kpl',40],
+ ['Frezowanie pod złącze blatu','kpl',60],
+ ['Cięcie pod kątem / skos','szt',25],
+ ['Oklejanie PCV proste','mb',8],
+ ['Oklejanie PCV po skosie / nietypowe','mb',14],
+ ['Promień / zaokrąglenie','szt',35],
+ ['Wycięcie niestandardowe','szt',60]
+].map(x=>({name:x[0],unit:x[1],price:x[2]}));
+let aiPrices=[], aiOperations=[], aiConstruction=null, aiSelectedFile=null;
+
+function aiLoadPrices(){
+ const saved=localStorage.getItem(AI_PRICE_KEY);
+ aiPrices=saved?JSON.parse(saved):aiDefaultPrices.map(x=>({...x}));
+ aiRenderPrices();
+}
+function aiReadPrices(){
+ const rows=document.querySelectorAll('#aiPriceTable tr');
+ return Array.from(rows).map(tr=>({
+   name:tr.querySelector('.aiPn').value,
+   unit:tr.querySelector('.aiPu').value,
+   price:Number(tr.querySelector('.aiPp').value)||0
+ })).filter(x=>x.name);
+}
+function aiRenderPrices(){
+ const el=byId('aiPriceTable'); if(!el)return;
+ el.innerHTML=aiPrices.map(p=>`<tr><td><input class="aiPn" value="${esc(p.name)}"></td><td><input class="aiPu" value="${esc(p.unit)}"></td><td><input class="aiPp" type="number" step="0.01" value="${p.price}"></td></tr>`).join('');
+}
+function aiSavePrices(){
+ aiPrices=aiReadPrices();
+ localStorage.setItem(AI_PRICE_KEY,JSON.stringify(aiPrices));
+ aiRecalcOps();
+ alert('Cennik AI zapisany.');
+}
+function aiPriceFor(name){
+ aiPrices=aiReadPrices();
+ return aiPrices.find(p=>p.name===name)||{name,unit:'szt',price:0};
+}
+function aiMakeOp(name,qty){
+ const p=aiPriceFor(name);
+ return {name,qty,unit:p.unit,price:p.price};
+}
+function aiLoadPreview(ev){
+ aiSelectedFile=ev.target.files[0]; if(!aiSelectedFile)return;
+ const box=byId('aiPreviewBox');
+ if(aiSelectedFile.type.startsWith('image/')){
+   const r=new FileReader();
+   r.onload=e=>box.innerHTML='<img src="'+e.target.result+'">';
+   r.readAsDataURL(aiSelectedFile);
+ } else {
+   box.innerHTML='<span class="pill blue">PDF przypisany: '+esc(aiSelectedFile.name)+'</span>';
+ }
+}
+async function aiRunAnalysis(){
+ const endpoint=byId('aiApiEndpoint').value.trim();
+ if(!endpoint){alert('Brak endpointu AI.');return;}
+ if(!aiSelectedFile){alert('Najpierw wgraj plik.');return;}
+ try{
+   const fd=new FormData();
+   fd.append('file',aiSelectedFile);
+   fd.append('analysisType',byId('aiAnalysisType').value);
+   fd.append('materialType',byId('aiMaterialType').value);
+   const res=await fetch(endpoint,{method:'POST',body:fd});
+   const data=await res.json();
+   if(!res.ok)throw new Error(data.error||'Błąd API');
+   byId('aiJson').value=JSON.stringify(data,null,2);
+   aiApplyData(data);
+ }catch(e){
+   alert('Nie udało się wykonać analizy AI: '+e.message+'. Możesz użyć przykładu MEUBELS lub wkleić JSON ręcznie.');
+ }
+}
+function aiLoadMeubelsExample(){
+ const data={
+  type:'countertop_l',
+  material:'EGGER F8001 ST9 Solid Crystal Marble',
+  isHPL:false,
+  joints:[{type:'L_join',location:'right',confidence:.95}],
+  dimensions:{overallDepth:934,mainDepth:615,mainLength:2249,sideWidth:605},
+  holes:[{type:'round',diameter:480,qty:1,confidence:.9}],
+  connectors:{screwHoles:true,cncJoint:true},
+  realSawCuts:3,
+  detectedOperations:['Cięcie blatu / elementu','Frezowanie otworu okrągłego','Otwory pod śruby do łączenia blatów','Frezowanie pod złącze blatu','Element nietypowy / ręczna kontrola'],
+  notes:'Najpierw łączenie L, potem wyliczenie blatów. Cięcie = 3: zbrzegowanie, pierwszy blat, drugi blat.',
+  confidence:.92
+ };
+ byId('aiJson').value=JSON.stringify(data,null,2);
+ aiApplyData(data);
+}
+function aiParseManualJson(){
+ try{
+  const txt=byId('aiJson').value.trim();
+  if(!txt)return;
+  aiApplyData(JSON.parse(txt));
+ }catch(e){}
+}
+function aiApplyData(data){
+ aiConstruction=data;
+ if(data.isHPL===true)byId('aiMaterialType').value='HPL';
+ if(data.isHPL===false)byId('aiMaterialType').value='Inny niż HPL';
+ aiApplyRules();
+}
+function aiApplyRules(){
+ if(!aiConstruction){aiRenderEmpty();return;}
+ const d=aiConstruction.dimensions||{};
+ const isHPL=byId('aiMaterialType').value==='HPL';
+ const allowance=isHPL?0:20;
+ const overall=Number(d.overallDepth)||0;
+ const mainD=Number(d.mainDepth)||0;
+ const mainL=Number(d.mainLength)||0;
+ const sideW=Number(d.sideWidth)||0;
+ const sideDepth=overall-mainD+allowance;
+ const holeQty=(aiConstruction.holes||[]).reduce((s,h)=>s+(Number(h.qty)||1),0);
+ const sawCuts=Number(aiConstruction.realSawCuts)||0;
+ aiOperations=[
+  aiMakeOp('Cięcie blatu / elementu',sawCuts),
+  aiMakeOp('Frezowanie otworu okrągłego',holeQty),
+  aiMakeOp('Otwory pod śruby do łączenia blatów',aiConstruction.connectors?.screwHoles?1:0),
+  aiMakeOp('Frezowanie pod złącze blatu',aiConstruction.connectors?.cncJoint?1:0),
+  aiMakeOp('Element nietypowy / ręczna kontrola',1)
+ ].filter(o=>o.qty>0);
+ aiConstruction.calculated={allowance,sideDepth,mainL,mainD,sideW,overall};
+ byId('aiNotes').value=`Kolejność analizy: najpierw miejsca łączeń. Typ: ${aiConstruction.type||'-'}. Materiał: ${aiConstruction.material||'-'}. Mały blat = ${overall} - ${mainD} + ${allowance} = ${sideDepth} mm. Cięcie blatu = ${sawCuts} szt. ${aiConstruction.notes||''}`;
+ aiRenderAll();
+}
+function aiRenderEmpty(){
+ if(byId('aiConstructionTable'))byId('aiConstructionTable').innerHTML='';
+ if(byId('aiTopsTable'))byId('aiTopsTable').innerHTML='';
+ if(byId('aiOpsTable'))byId('aiOpsTable').innerHTML='';
+ aiUpdateSummary();
+}
+function aiRenderAll(){aiRenderConstruction();aiRenderTops();aiRenderOps();}
+function aiRenderConstruction(){
+ const c=aiConstruction, calc=c.calculated||{};
+ byId('aiConstructionTable').innerHTML=[
+  ['Materiał',c.material||'-'],
+  ['Typ',c.type||'-'],
+  ['Ilość łączeń',(c.joints||[]).length],
+  ['Naddatek CNC',calc.allowance+' mm'],
+  ['Cięcia realne',c.realSawCuts||0],
+  ['Pewność AI',Math.round((c.confidence||0)*100)+'%']
+ ].map(r=>`<tr><td>${esc(r[0])}</td><td><b>${esc(r[1])}</b></td></tr>`).join('');
+}
+function aiRenderTops(){
+ const c=aiConstruction.calculated;
+ byId('aiTopsTable').innerHTML=`<tr><td>Blat główny</td><td><b>${c.mainL} × ${c.mainD} mm</b></td><td>Element główny</td></tr>
+ <tr><td>Blat boczny / dostawka</td><td><b>${c.sideW} × ${c.sideDepth} mm</b></td><td>${c.overall} − ${c.mainD} + ${c.allowance} = ${c.sideDepth} mm</td></tr>
+ <tr><td>Naddatek CNC</td><td><b>${c.allowance} mm</b></td><td>${byId('aiMaterialType').value==='HPL'?'HPL: bez +20 mm':'Blat inny niż HPL: +20 mm'}</td></tr>`;
+}
+function aiClear(){
+ aiOperations=[]; aiConstruction=null;
+ if(byId('aiJson'))byId('aiJson').value='';
+ if(byId('aiNotes'))byId('aiNotes').value='';
+ aiRenderEmpty();
+}
+function aiAddOperation(){aiOperations.push(aiMakeOp(aiPrices[0]?.name||'Cięcie blatu / elementu',1));aiRenderOps();}
+function aiRemoveOperation(i){aiOperations.splice(i,1);aiRenderOps();}
+function aiSetOpName(i,v){const p=aiPriceFor(v);aiOperations[i].name=v;aiOperations[i].unit=p.unit;aiOperations[i].price=p.price;aiRenderOps();}
+function aiRecalcOps(){aiOperations=aiOperations.map(o=>{const p=aiPriceFor(o.name);return{...o,unit:p.unit,price:p.price}});aiRenderOps();}
+function aiRenderOps(){
+ const el=byId('aiOpsTable'); if(!el)return;
+ const opts=aiReadPrices().map(p=>p.name);
+ el.innerHTML=aiOperations.map((o,i)=>`<tr><td><select onchange="aiSetOpName(${i},this.value)">${opts.map(x=>`<option ${o.name===x?'selected':''}>${esc(x)}</option>`).join('')}</select></td><td><input type="number" step="0.001" value="${o.qty}" oninput="aiOperations[${i}].qty=Number(this.value)||0;aiUpdateSummary()"></td><td><input value="${esc(o.unit)}" oninput="aiOperations[${i}].unit=this.value;aiUpdateSummary()"></td><td><input type="number" step="0.01" value="${o.price}" oninput="aiOperations[${i}].price=Number(this.value)||0;aiUpdateSummary()"></td><td class="right"><b>${(o.qty*o.price).toFixed(2)} zł</b></td><td><button class="red" onclick="aiRemoveOperation(${i})">Usuń</button></td></tr>`).join('');
+ aiUpdateSummary();
+}
+function aiUpdateSummary(){
+ const el=byId('aiSummary'); if(!el)return;
+ const total=aiOperations.reduce((s,o)=>s+(Number(o.qty)||0)*(Number(o.price)||0),0);
+ el.innerHTML=`<div class="value">${total.toFixed(2)} zł netto</div><span class="pill done">Operacje: ${aiOperations.length}</span><span class="pill blue">${byId('aiAnalysisType')?byId('aiAnalysisType').value:'AI'}</span>`;
+}
+function aiGeneratePdf(){
+ if(!aiOperations.length){alert('Brak operacji');return;}
+ if(!window.jspdf){alert('Biblioteka PDF nie załadowana');return;}
+ const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'mm',format:'a4'}); let y=14;
+ function add(t,s=10,b=false){doc.setFont('helvetica',b?'bold':'normal');doc.setFontSize(s);doc.splitTextToSize(String(t),180).forEach(l=>{if(y>280){doc.addPage();y=14}doc.text(l,14,y);y+=6})}
+ const total=aiOperations.reduce((s,o)=>s+o.qty*o.price,0);
+ add('KMS - AI Analiza Rysunku LAB',16,true);
+ add('Zlecenie: '+(byId('aiOrderNo').value||'-'),12,true);
+ if(aiConstruction?.calculated){const c=aiConstruction.calculated;add('Blat główny: '+c.mainL+' x '+c.mainD+' mm',10);add('Blat boczny: '+c.sideW+' x '+c.sideDepth+' mm',10);add('Naddatek CNC: '+c.allowance+' mm',10);}
+ y+=3;add('Operacje:',12,true);
+ aiOperations.forEach((o,i)=>add((i+1)+'. '+o.name+' | '+o.qty+' '+o.unit+' x '+Number(o.price).toFixed(2)+' zł = '+(o.qty*o.price).toFixed(2)+' zł',9));
+ y+=3;add('Razem netto: '+total.toFixed(2)+' zł',13,true);
+ y+=3;add('Uwagi:',11,true);add(byId('aiNotes').value||'-',9);
+ doc.save('KMS_AI_Analiza_Rysunku.pdf');
+}
+function aiInit(){aiLoadPrices();aiRenderEmpty();}
+
+aiInit();
+renderPendingDocs();render();
+</script>
+</body>
+</html>
